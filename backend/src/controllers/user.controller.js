@@ -4,6 +4,7 @@ const Users = require("../models/user.model");
 const ApiResponse = require("../utils/ApiResponse");
 const jwt = require("jsonwebtoken");
 const { default: mongoose } = require("mongoose");
+const roleModel = require("../models/role.model");
 
 const generateAccessAndRefreshTokens = async (userId) => {
   try {
@@ -27,13 +28,19 @@ const generateAccessAndRefreshTokens = async (userId) => {
 const registerUser = asyncHandler(async (req, resp) => {
   console.log("register called");
 
-  const { fullName, email, userName, password } = req.body;
+  const { fullName, email, userName, password, role } = req.body;
   console.log("reqbody", req.body);
 
   if (
-    [fullName, email, userName, password].some((field) => field?.trim() === "")
+    [fullName, email, userName, password, role].some((field) => field?.trim() === "")
   ) {
     throw new ApiError(400, "All Fields are required");
+  }
+
+  // Validate if the role exists
+  const existingRole = await roleModel.findOne({ role: role.toLowerCase() });
+  if (!existingRole) {
+    throw new ApiError(400, "Invalid Role.")
   }
 
   const existedUser = await Users.findOne({
@@ -72,6 +79,7 @@ const registerUser = asyncHandler(async (req, resp) => {
     email,
     password,
     userName: userName.toLowerCase(),
+    role: existingRole._id,
   });
 
   const createdUser = await Users.findById(user._id).select(
