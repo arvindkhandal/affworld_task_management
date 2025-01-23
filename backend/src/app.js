@@ -22,14 +22,12 @@ app.use(bodyParser.json());
 const userRoute = require("./routes/user.routes");
 const taskRoute = require("./routes/task.routes");
 const postRoute = require('./routes/post.routes');
-const roleRoute = require('./routes/role.routes');
 
 // Routes Declearation
 
 app.use("/api/v1/users", userRoute);
 app.use("/api/v1/task", taskRoute);
 app.use("/api/v1/post", postRoute);
-app.use("/api/v1/role", roleRoute);
 
 
 // basic route 

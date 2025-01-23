@@ -9,9 +9,9 @@ export default function App() {
     <Router>
       <div className="layout__wrapper flex flex-col justify-center items-center">
         <Routes>
-          <Route path="/" element={<Navigate to="/login" replace />} />
+          <Route path="/" element={<Navigate to="/signin" replace />} />
 
-          <Route path="/login" element={<Login />} />
+          <Route path="/signin" element={<Login />} />
           
           <Route path="/signup" element={<Signup />} />
           

@@ -4,7 +4,6 @@ const Users = require("../models/user.model");
 const ApiResponse = require("../utils/ApiResponse");
 const jwt = require("jsonwebtoken");
 const { default: mongoose } = require("mongoose");
-const roleModel = require("../models/role.model");
 
 const generateAccessAndRefreshTokens = async (userId) => {
   try {
@@ -28,28 +27,29 @@ const generateAccessAndRefreshTokens = async (userId) => {
 const registerUser = asyncHandler(async (req, resp) => {
   console.log("register called");
 
-  const { fullName, email, userName, password, role } = req.body;
+  const { fullName, email, password } = req.body;
   console.log("reqbody", req.body);
 
   if (
-    [fullName, email, userName, password, role].some((field) => field?.trim() === "")
+    [fullName, email, password].some((field) => field?.trim() === "")
   ) {
     throw new ApiError(400, "All Fields are required");
   }
 
   // Validate if the role exists
-  const existingRole = await roleModel.findOne({ role: role.toLowerCase() });
-  if (!existingRole) {
-    throw new ApiError(400, "Invalid Role.")
-  }
+  // const existingRole = await roleModel.findOne({ role: role.toLowerCase() });
+  // if (!existingRole) {
+  //   throw new ApiError(400, "Invalid Role.")
+  // }
 
   const existedUser = await Users.findOne({
-    $or: [{ userName }, { email }],
+    $or: [{ fullName }, { email }],
   });
   console.log("existedUser", existedUser);
 
   if (existedUser) {
-    throw new ApiError(409, "user with email or userName is already exist");
+    // throw new ApiError(409, `user with ${email} or ${userName} is already exist.`)
+    resp.status(409).json({ statusCode: 409, success: false, message: `user with ${email} or ${fullName} is already exist.` });
   }
 
   // console.log("req.file ", req.files);
@@ -77,9 +77,7 @@ const registerUser = asyncHandler(async (req, resp) => {
     // avatar: avatar.url,
     // coverImage: coverImage?.url || "",
     email,
-    password,
-    userName: userName.toLowerCase(),
-    role: existingRole._id,
+    password
   });
 
   const createdUser = await Users.findById(user._id).select(
@@ -87,7 +85,8 @@ const registerUser = asyncHandler(async (req, resp) => {
   );
 
   if (!createdUser) {
-    throw new ApiError(500, "Something went wrong while creating user");
+    // throw new ApiError(500, "Something went wrong while creating user");
+    resp.status(500).json({ statusCode: 500, success: false, message: `Something went wrong while creating user` });
   }
 
   return resp
@@ -98,22 +97,25 @@ const registerUser = asyncHandler(async (req, resp) => {
 const loginUser = asyncHandler(async (req, resp) => {
   console.log("login called");
 
-  const { email, userName, password } = req.body;
-  if (!(userName || email)) {
-    throw new ApiError(400, "userName or email is required");
+  const { fullName, email, password } = req.body;
+  if (!(fullName || email)) {
+    // throw new ApiError(400, "userName or email is required");
+    resp.status(400).json({ statusCode: 400, success: false, message: `fullName or email is required.` })
   }
 
   const user = await Users.findOne({
-    $or: [{ userName }, { email }],
+    $or: [{ fullName }, { email }],
   });
 
   if (!user) {
-    throw new ApiError(404, "user does not exists");
+    // throw new ApiError(404, "user does not exists");
+    resp.status(400).json({ statusCode: 400, success: false, message: `user does not exists.` })
   }
 
   const isPasswordValid = await user.isPasswordCorrect(password);
   if (!isPasswordValid) {
-    throw new ApiError(404, "Invalid Credentials");
+    // throw new ApiError(404, "Invalid Credentials");
+    resp.status(400).json({ statusCode: 400, success: false, message: `Invalid Credentials.` })
   }
 
   const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(
@@ -178,7 +180,8 @@ const refreshAccessToken = asyncHandler(async (req, resp) => {
   console.log("incomingRefreshToken", incomingRefreshToken);
 
   if (!incomingRefreshToken) {
-    throw new ApiError(401, "Unauthorized Request");
+    // throw new ApiError(401, "Unauthorized Request");
+    resp.status(401).status({ statusCode: 401, success: false, message: `Unauthorized Request.` })
   }
 
   try {
@@ -190,11 +193,13 @@ const refreshAccessToken = asyncHandler(async (req, resp) => {
     const user = await Users.findById(decodedToken._id);
 
     if (!user) {
-      throw new ApiError(401, "Invalid refresh token");
+      // throw new ApiError(401, "Invalid refresh token");
+      resp.status(401).status({ statusCode: 401, success: false, message: `Invalid refresh token.` })
     }
 
     if (incomingRefreshToken !== user?.refreshToken) {
-      throw new ApiError(401, "Refresh token is expired or used");
+      // throw new ApiError(401, "Refresh token is expired or used");
+      resp.status(401).status({ statusCode: 401, success: false, message: `Refresh token is expired or used.` });
     }
 
     const options = {
@@ -231,7 +236,8 @@ const changeCurrentUserPassword = asyncHandler(async (req, resp) => {
   const isPasswordCorrect = await user.isPasswordCorrect(oldPassword);
 
   if (!isPasswordCorrect) {
-    throw new ApiError(400, "Invalid old password");
+    // throw new ApiError(400, "Invalid old password");
+    resp.status(400).status({ statusCode: 400, success: false, message: `Invalid old password.` });
   }
 
   user.password = newPassword;

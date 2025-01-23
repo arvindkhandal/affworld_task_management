@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { DragDropContext, Droppable } from "react-beautiful-dnd";
 import DroppableList from './DroppableList';
+import { UPDATE_TASK } from './API';
 
 export default function LeadsOverview({ DATA, handleDelete, setTasks }) {
   const [items, setItems] = useState([]);
@@ -11,6 +12,7 @@ export default function LeadsOverview({ DATA, handleDelete, setTasks }) {
     items.forEach((currentGroup, i) => {
       groups[currentGroup.id] = i;
     });
+    console.log('hila21',items, groups);
     setItems(items);
     setTasks(items);
     setGroups(groups);
@@ -19,9 +21,24 @@ export default function LeadsOverview({ DATA, handleDelete, setTasks }) {
   useEffect(() => {
     buildAndSave(DATA);
   }, [DATA]);
+  
+  const updateApiCall = async(id, status) => {
+    const result = await fetch(`${UPDATE_TASK}${id}`, {
+      method: "PUT",
+      headers: { 
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        "status": status
+      }), 
+    });
+
+    console.log("result", result)
+  }
 
   const handleDragEnd = (result) => {
     const { destination, source, type } = result;
+
     
     if (!destination || (destination.droppableId === source.droppableId && 
         destination.index === source.index)) {
@@ -55,6 +72,14 @@ export default function LeadsOverview({ DATA, handleDelete, setTasks }) {
       }
       return item;
     });
+
+    if(result.destination.droppableId === "af7"){
+      updateApiCall(result.draggableId, "Done");
+    }else if(result.destination.droppableId === "af4"){
+      updateApiCall(result.draggableId, "Completed");
+    }else if(result.destination.droppableId === "af1"){
+      updateApiCall(result.draggableId, "Pending");
+    }
 
     setItems(workValue);
     setTasks(workValue);
