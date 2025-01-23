@@ -3,14 +3,6 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 
 const userSchema = new mongoose.Schema({
-  userName: {
-    type: String,
-    required: true,
-    unique: true,
-    lowercase: true,
-    trim: true,
-    index: true,
-  },
   email: {
     type: String,
     required: true,
@@ -38,11 +30,7 @@ const userSchema = new mongoose.Schema({
   },
   refreshToken: {
     type: String,
-  },
-  role: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Role",
-  },
+  }
 });
 
 userSchema.pre("save", async function (next) {
@@ -61,7 +49,7 @@ userSchema.methods.generateAccessToken = function () {
       _id: this._id,
       email: this.email,
       fullName: this.fullName,
-      userName: this.userName,
+      // userName: this.userName,
     },
     process.env.ACCESS_TOKEN_SECRET,
     {
@@ -76,7 +64,7 @@ userSchema.methods.generateRefreshToken = function () {
       _id: this._id,
       email: this.email,
       fullName: this.fullName,
-      userName: this.userName,
+      // userName: this.userName,
     },
     process.env.REFRESH_TOKEN_SECERET,
     {

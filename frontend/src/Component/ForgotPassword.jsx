@@ -52,9 +52,9 @@ const ForgotPassword = () => {
 
           <p className="text-center text-gray-500 mt-4">
             Remember your password?{" "}
-            <span className="text-indigo-600 font-medium cursor-pointer" >
+            <a href="/signin" className="text-indigo-600 font-medium cursor-pointer" >
               Sign in
-            </span>
+            </a>
           </p>
         </form>
       </div>

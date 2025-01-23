@@ -1,7 +1,7 @@
 const jwt = require("jsonwebtoken");
 const Users = require("../models/user.model");
 const { default: mongoose, isValidObjectId } = require("mongoose");
-const Roles = require("../models/role.model");
+// const Roles = require("../models/role.model");
 const { asyncHandler } = require("../utils/asyncHandler");
 
 const verifyJWT = asyncHandler(async (req, _, next) => {
@@ -44,13 +44,13 @@ const checkPermission = (requiredPermission) => {
       }
 
       const permissionSets = await Roles.findById(roleId).select("permissions");
-      console.log("permissionSets", permissionSets);
+      console.log("permissionSets", permissionSets.permissions, requiredPermission);
 
-      if (!permissionSets) {
+      if (permissionSets.length === 0) {
         throw new ApiError(404, "No role found");
       }
 
-      if (!permissionSets.includes(requiredPermission)) {
+      if (!permissionSets.permissions.includes(requiredPermission)) {
         throw new ApiError(401, "not authorizd to perform this task");
       }
 

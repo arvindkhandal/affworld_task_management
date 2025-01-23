@@ -1,29 +1,34 @@
 import React from "react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { CREATE_USER } from "./API";
 
 const Signup = () => {
-  const [name, setName] = useState("");
+  const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  const handleSignup = (e) => {
+  const handleSignup = async (e) => {
     e.preventDefault();
-    const users = JSON.parse(localStorage.getItem("users")) || [];
-
-    if (users.find((user) => user.email === email)) {
-      setError("Email already exists. Please log in.");
-      return;
+    try {
+      const response = await fetch(CREATE_USER, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ fullName, email, password }),
+      });
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.message || "Something went wrong");
+      }
+      navigate("/"); 
+    } catch (error) {
+      setError(error.message);
     }
-
-    const newUser = { name, email, password };
-    users.push(newUser);
-    localStorage.setItem("users", JSON.stringify(users));
-
-    alert("Account created successfully!");
-    navigate("/"); 
   };
 
   return (
@@ -31,7 +36,7 @@ const Signup = () => {
       <div className="w-[30rem]  bg-white shadow-lg rounded-lg p-8">
         <h1 className="text-3xl font-bold text-gray-800 text-center">Sign Up</h1>
         <p className="text-gray-500 text-center mt-2">
-          Already have an account? <a href="/login" className="text-indigo-600 font-medium">Sign in</a>
+          Already have an account? <a href="/signin" className="text-indigo-600 font-medium">Sign in</a>
         </p>
         <form className="mt-6 space-y-5" onSubmit={handleSignup}>
           {error && <p className="text-red-500 text-sm text-center">{error}</p>}
@@ -41,8 +46,8 @@ const Signup = () => {
             <input
               type="text"
               placeholder="Enter your name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
               className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
               required
             />

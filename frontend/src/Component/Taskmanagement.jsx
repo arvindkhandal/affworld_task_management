@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from "react";
 import LeadsOverview from "./LeadsOverview";
 import TaskForm from "./TaskForm";
+import { DELETE_TASK, GET_ALL_TASKS } from "./API";
+import FeedForm from "./FeedForm";
+import FeedList from "./FeedList";
 
 export const INITIAL_DATA = [
   { id: "af1", label: "Pending", items: [], tint: 1 },
@@ -12,19 +15,53 @@ export default function TaskManagement() {
   const [userName, setUserName] = useState('');
   const [userMail, setUserMail] = useState('');
   const [isPopupOpen, setIsPopupOpen] = useState(false);
+  const [feedModal, setFeedModal] = useState(false);
   const [tasks, setTasks] = useState(INITIAL_DATA);
+  const [refresh, setRefresh] = useState(false);
+
+  const handlePostCreated = () => {
+    setRefresh((prev) => !prev);
+  };
 
   useEffect(() => {
-    const userData = localStorage.getItem("users");
+    const userData = localStorage.getItem("user");
 
     if (userData) {
       const parsedData = JSON.parse(userData);
-      console.log(parsedData[0].name, 'pars')
-      setUserName(parsedData[0]?.name);
-      setUserMail(parsedData[0]?.email);
+      setUserName(parsedData?.fullName);
+      setUserMail(parsedData?.email);
     }
   }, []);
-  
+
+  useEffect(() => {
+    const fetchTasks = async () => {
+      try {
+        const response = await fetch(GET_ALL_TASKS, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch tasks.");
+        }
+
+        const result = await response.json();
+        console.log("Fetched Tasks:", result);
+        console.log(result.data,'result')
+
+        if (result.success) {
+          setTasks(result.data);
+        }
+      } catch (error) {
+        console.error("Error fetching tasks:", error.message);
+      }
+    };
+
+    fetchTasks();
+  }, []);
+
   const handleAddTask = (newTask) => {
     setTasks((prev) =>
       prev.map((ele) =>
@@ -35,18 +72,31 @@ export default function TaskManagement() {
     );
   };
 
-  const handleDelete = (id, label) => {
-    setTasks((prev) =>
-      prev.map((task) =>
-        task.label === label
-          ? {
-            ...task,
-            items: task.items.filter((item) => item.id !== id),
-          }
-          : task
-      )
-    );
+  const handleDelete = async (id, label) => {
+    try {
+      const response = await fetch(`${DELETE_TASK}${id}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+  
+      if (!response.ok) {
+        throw new Error("Failed to delete task. Please try again.");
+      }
+  
+      setTasks((prev) =>
+        prev.map((task) =>
+          task.label === label
+            ? { ...task, items: task.items.filter((item) => item.id !== id) }
+            : task
+        )
+      );
+    } catch (error) {
+
+    }
   };
+  
 
   return (
     <div className="layout__wrapper">
@@ -82,6 +132,23 @@ export default function TaskManagement() {
           onClose={() => setIsPopupOpen(false)}
         />
       )}
+      <div className=" mx-auto mt-6 border-t-2 border-gray-500">
+      <div className="header p-4 border-b-2 w-full border-gray-500 flex justify-between items-center">
+        <h1 className="text-2xl text-white font-bold text-center">Feed Section</h1>
+
+        <div className="flex justify-end">
+          <button
+            onClick={() => setFeedModal(true)}
+            className="bg-gradient-to-r from-[#028ce1] to-[#6a99e0] text-white p-2 rounded"
+          >
+            Create Feed
+          </button>
+        </div>
+
+      </div>
+      {feedModal && <FeedForm onClose={() => setFeedModal(false)} onSubmit={handlePostCreated} />}
+      <FeedList key={refresh} />
+    </div>
     </div>
   );
 }
