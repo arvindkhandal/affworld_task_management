@@ -17,19 +17,18 @@ const userSchema = new mongoose.Schema({
     trim: true,
     index: true,
   },
-  // avatar: {
-  //     type: String, // cloudinary/AWS URL
-  //     required: true
-  // },
-  // coverImage: {
-  //     type: String, // cloudinary/AWS URL
-  // },
   password: {
     type: String,
     required: [true, "Password is required"],
   },
   refreshToken: {
     type: String,
+  },
+  passwordResetToken: {
+    type: String,
+  },
+  passwordResetExpires: {
+    type: Date,
   }
 });
 
@@ -49,7 +48,6 @@ userSchema.methods.generateAccessToken = function () {
       _id: this._id,
       email: this.email,
       fullName: this.fullName,
-      // userName: this.userName,
     },
     process.env.ACCESS_TOKEN_SECRET,
     {
@@ -64,7 +62,6 @@ userSchema.methods.generateRefreshToken = function () {
       _id: this._id,
       email: this.email,
       fullName: this.fullName,
-      // userName: this.userName,
     },
     process.env.REFRESH_TOKEN_SECERET,
     {

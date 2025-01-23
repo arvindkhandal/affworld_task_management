@@ -80,16 +80,36 @@ export default function FeedForm({ onSubmit, onClose }) {
           />
 
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
               Upload Image
             </label>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleImageChange}
-              required
-              className="mt-1 p-2 w-full border border-gray-300 rounded shadow-sm focus:ring-blue-500 focus:border-blue-500"
-            />
+            <div className="relative border-2 border-dashed border-gray-300 rounded-lg p-6 flex flex-col items-center justify-center cursor-pointer hover:border-blue-500 transition">
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
+                className="absolute inset-0 opacity-0 w-full h-full cursor-pointer"
+              />
+              <div className="text-center">
+                <svg
+                  className="w-12 h-12 text-gray-400 mx-auto"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M7 16V12a4 4 0 018 0v4m5 0a2 2 0 11-4 0m-6 0a2 2 0 11-4 0M3 16h18M4 20h16"
+                  ></path>
+                </svg>
+                <p className="mt-2 text-sm text-gray-600">
+                  Drag & drop an image here, or <span className="text-blue-500">browse</span>
+                </p>
+              </div>
+            </div>
           </div>
 
           {preview && (

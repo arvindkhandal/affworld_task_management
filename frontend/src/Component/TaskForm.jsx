@@ -66,13 +66,13 @@ export default function TaskForm({ onSubmit, onClose }) {
             <button
               type="button"
               onClick={onClose}
-              className="bg-gray-300 text-gray-700 px-4 py-2 rounded mr-2"
+              className="bg-gray-300 text-gray-700 px-4 py-2 rounded-md"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="bg-blue-500 text-white px-4 py-2 rounded"
+              className="bg-gradient-to-r mr-2 from-[#028ce1] to-[#6a99e0] text-white px-4 py-2 rounded-md"
             >
               Add Task
             </button>
