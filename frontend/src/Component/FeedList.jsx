@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { MdDelete } from "react-icons/md";
 import { GET_ALL_POSTS, DELETE_POST } from "./API";
+import DeleteModal from "./DeleteModal";
 
 const FeedList = () => {
     const [posts, setPosts] = useState([]);
     const [userId, setUserId] = useState(null);
+    const [deleteModal, setDeleteModal] = useState(false);
 
-    // Fetch User ID from Local Storage
     useEffect(() => {
         const userData = localStorage.getItem("user");
         if (userData) {
@@ -15,7 +16,6 @@ const FeedList = () => {
         }
     }, []);
 
-    // Fetch Posts
     useEffect(() => {
         const fetchPosts = async () => {
             try {
@@ -43,7 +43,6 @@ const FeedList = () => {
         fetchPosts();
     }, []);
 
-    // Handle Delete Post
     const handleDeletePost = async (id) => {
         try {
             const token = localStorage.getItem("accessToken");
@@ -60,8 +59,6 @@ const FeedList = () => {
 
             const result = await response.json();
             console.log("Post deleted successfully", result);
-
-            // Remove deleted post from UI
             setPosts(posts.filter(post => post._id !== id));
         } catch (error) {
             console.error("Error deleting the post", error.message);
@@ -87,12 +84,19 @@ const FeedList = () => {
                                     By {post.user?.fullName || 'Unknown User'}
                                 </p>
                             </div>
-                            {/* Conditional Rendering for Delete Button */}
                             {userId === post?.user?._id && (
+                                <>
                                 <MdDelete
                                     className="text-2xl text-white cursor-pointer"
-                                    onClick={() => handleDeletePost(post._id)}
+                                    onClick={()=>{setDeleteModal(true)}}
                                 />
+                                {deleteModal && (
+                                        <DeleteModal 
+                                          onCancel={()=>{setDeleteModal(false)}}
+                                          onConfirm={() => handleDeletePost(post._id) }
+                                        />
+                                      )}
+                                </>
                             )}
                         </div>
                     </div>

@@ -12,7 +12,6 @@ export default function LeadsOverview({ DATA, handleDelete, setTasks }) {
     items.forEach((currentGroup, i) => {
       groups[currentGroup.id] = i;
     });
-    console.log('hila21',items, groups);
     setItems(items);
     setTasks(items);
     setGroups(groups);

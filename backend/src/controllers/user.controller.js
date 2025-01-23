@@ -3,7 +3,10 @@ const { ApiError } = require("../utils/ApiError");
 const Users = require("../models/user.model");
 const ApiResponse = require("../utils/ApiResponse");
 const jwt = require("jsonwebtoken");
+const crypto = require('crypto');
 const { default: mongoose } = require("mongoose");
+const transporter = require("../utils/configs/nodeMailerConfig");
+
 
 const generateAccessAndRefreshTokens = async (userId) => {
   try {
@@ -36,46 +39,17 @@ const registerUser = asyncHandler(async (req, resp) => {
     throw new ApiError(400, "All Fields are required");
   }
 
-  // Validate if the role exists
-  // const existingRole = await roleModel.findOne({ role: role.toLowerCase() });
-  // if (!existingRole) {
-  //   throw new ApiError(400, "Invalid Role.")
-  // }
-
   const existedUser = await Users.findOne({
     $or: [{ fullName }, { email }],
   });
   console.log("existedUser", existedUser);
 
   if (existedUser) {
-    // throw new ApiError(409, `user with ${email} or ${userName} is already exist.`)
     resp.status(409).json({ statusCode: 409, success: false, message: `user with ${email} or ${fullName} is already exist.` });
   }
 
-  // console.log("req.file ", req.files);
-  // const avatarLocalPath = req.files?.avatar[0]?.path;
-  // // const coverImageLocalPath = req.files?.coverImage[0]?.path;
-
-  // let coverImageLocalPath;
-  // if(req.files && Array.isArray(req.files.coverImage) && req.files.coverImage.length > 0) {
-  //     coverImageLocalPath = req.files.coverImage[0].path;
-  // }
-
-  // if(!avatarLocalPath) {
-  //     throw new ApiError(400, "Avatar file is required");
-  // }
-
-  // const avatar = await uploadOnCloudinary(avatarLocalPath);
-  // const coverImage = await uploadOnCloudinary(coverImageLocalPath);
-
-  // if(!avatar) {
-  //     throw new ApiError(400, "Avatar file is required");
-  // }
-
   const user = await Users.create({
     fullName,
-    // avatar: avatar.url,
-    // coverImage: coverImage?.url || "",
     email,
     password
   });
@@ -85,7 +59,6 @@ const registerUser = asyncHandler(async (req, resp) => {
   );
 
   if (!createdUser) {
-    // throw new ApiError(500, "Something went wrong while creating user");
     resp.status(500).json({ statusCode: 500, success: false, message: `Something went wrong while creating user` });
   }
 
@@ -99,7 +72,6 @@ const loginUser = asyncHandler(async (req, resp) => {
 
   const { fullName, email, password } = req.body;
   if (!(fullName || email)) {
-    // throw new ApiError(400, "userName or email is required");
     resp.status(400).json({ statusCode: 400, success: false, message: `fullName or email is required.` })
   }
 
@@ -108,13 +80,11 @@ const loginUser = asyncHandler(async (req, resp) => {
   });
 
   if (!user) {
-    // throw new ApiError(404, "user does not exists");
     resp.status(400).json({ statusCode: 400, success: false, message: `user does not exists.` })
   }
 
   const isPasswordValid = await user.isPasswordCorrect(password);
   if (!isPasswordValid) {
-    // throw new ApiError(404, "Invalid Credentials");
     resp.status(400).json({ statusCode: 400, success: false, message: `Invalid Credentials.` })
   }
 
@@ -180,7 +150,6 @@ const refreshAccessToken = asyncHandler(async (req, resp) => {
   console.log("incomingRefreshToken", incomingRefreshToken);
 
   if (!incomingRefreshToken) {
-    // throw new ApiError(401, "Unauthorized Request");
     resp.status(401).status({ statusCode: 401, success: false, message: `Unauthorized Request.` })
   }
 
@@ -193,12 +162,10 @@ const refreshAccessToken = asyncHandler(async (req, resp) => {
     const user = await Users.findById(decodedToken._id);
 
     if (!user) {
-      // throw new ApiError(401, "Invalid refresh token");
       resp.status(401).status({ statusCode: 401, success: false, message: `Invalid refresh token.` })
     }
 
     if (incomingRefreshToken !== user?.refreshToken) {
-      // throw new ApiError(401, "Refresh token is expired or used");
       resp.status(401).status({ statusCode: 401, success: false, message: `Refresh token is expired or used.` });
     }
 
@@ -236,7 +203,6 @@ const changeCurrentUserPassword = asyncHandler(async (req, resp) => {
   const isPasswordCorrect = await user.isPasswordCorrect(oldPassword);
 
   if (!isPasswordCorrect) {
-    // throw new ApiError(400, "Invalid old password");
     resp.status(400).status({ statusCode: 400, success: false, message: `Invalid old password.` });
   }
 
@@ -254,6 +220,79 @@ const getCurrentUser = asyncHandler(async (req, resp) => {
     .json(new ApiResponse(200, req.user, "current user fetched successfully"));
 });
 
+
+const forgotPassword = asyncHandler(async (req, res) => {
+  const { email } = req.body;
+
+  if (!email) {
+    res.status(400).json({ statusCode: 400, success: false, message: `Email is required.` });
+  }
+
+  const user = await Users.findOne({ email });
+
+  if (!user) {
+    res.status(404).json({ statusCode: 404, success: false, message: `User with the provided email does not exist.` });
+  }
+
+  const resetToken = crypto.randomBytes(32).toString("hex");
+  const hashedToken = crypto.createHash("sha256").update(resetToken).digest("hex");
+
+  user.passwordResetToken = hashedToken;
+  user.passwordResetExpires = Date.now() + 15 * 60 * 1000;
+  await user.save({ validateBeforeSave: false });
+
+  const resetUrl = `${process.env.FRONTEND_BASE_URL}/forgot-password/${resetToken}`;
+
+  const mailOptions = {
+    from: process.env.EMAIL_USERNAME,
+    to: user.email,
+    subject: "Password Reset Request",
+    text: `You requested a password reset. Use this link to reset your password: ${resetUrl}. This link is valid for 15 minutes.`,
+  };
+  console.log("mailOptions", mailOptions)
+
+  try {
+    await transporter.sendMail(mailOptions);
+    res.status(200).json(new ApiResponse(200, {}, "Password reset link sent to email"));
+  } catch (error) {
+    console.log(error)
+    user.passwordResetToken = undefined;
+    user.passwordResetExpires = undefined;
+    await user.save({ validateBeforeSave: false });
+
+    res.status(500).json({ statusCode: 500, success: false, message: `Error sending password reset email.` });
+  }
+
+});
+
+
+const resetPassword = asyncHandler(async (req, res) => {
+  const { token } = req.params;
+  const { newPassword } = req.body;
+
+  if (!newPassword) {
+    res.status(400).json({ statusCode: 400, success: false, message: `New password is required.` });
+  }
+
+  const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+
+  const user = await Users.findOne({
+    passwordResetToken: hashedToken,
+    passwordResetExpires: { $gt: Date.now() },
+  });
+
+  if (!user) {
+    res.status(400).json({ statusCode: 400, success: false, message: `Invalid or expired reset token.` });
+  }
+
+  user.password = newPassword;
+  user.passwordResetToken = undefined;
+  user.passwordResetExpires = undefined;
+  await user.save();
+
+  res.status(200).json(new ApiResponse(200, {}, "Password reset successful"));
+});
+
 module.exports = {
   registerUser,
   loginUser,
@@ -261,4 +300,6 @@ module.exports = {
   refreshAccessToken,
   changeCurrentUserPassword,
   getCurrentUser,
+  forgotPassword,
+  resetPassword
 };

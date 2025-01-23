@@ -2,7 +2,7 @@ import React from 'react'
 
 export default function DeleteModal({onConfirm, onCancel}) {
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-40">
     <div className="bg-white p-6 rounded-lg shadow-lg w-80 text-center">
       <div className="flex justify-center mb-3">
         <span className="text-gray-500 text-3xl">⚠️</span>

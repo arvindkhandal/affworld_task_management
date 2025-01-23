@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { LOGIN_USER } from "./API";
 import { IoMdEye, IoMdEyeOff } from "react-icons/io";
 
-const Login = () => {
+const Login = ({setIsAuthenticated}) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -30,6 +30,7 @@ const Login = () => {
     localStorage.setItem("accessToken", data.data.accessToken);
     localStorage.setItem("refreshToken", data.data.refreshToken);
 
+    setIsAuthenticated(true);
       navigate("/taskmanagement");
     } catch (error) {
       setError(error.message);
@@ -85,7 +86,7 @@ const Login = () => {
             <label className="flex items-center">
               <input type="checkbox" className="mr-2" /> Remember me
             </label>
-            <a href="/forgot-password" className="text-indigo-500 hover:underline">
+            <a href="/forgot" className="text-indigo-500 hover:underline">
               Forgot Password?
             </a>
           </div>

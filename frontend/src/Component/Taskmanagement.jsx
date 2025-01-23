@@ -4,6 +4,7 @@ import TaskForm from "./TaskForm";
 import { DELETE_TASK, GET_ALL_TASKS } from "./API";
 import FeedForm from "./FeedForm";
 import FeedList from "./FeedList";
+import LogoutButton from "./LogoutButton";
 
 export const INITIAL_DATA = [
   { id: "af1", label: "Pending", items: [], tint: 1 },
@@ -48,8 +49,6 @@ export default function TaskManagement() {
         }
 
         const result = await response.json();
-        console.log("Fetched Tasks:", result);
-        console.log(result.data,'result')
 
         if (result.success) {
           setTasks(result.data);
@@ -100,7 +99,7 @@ export default function TaskManagement() {
 
   return (
     <div className="layout__wrapper">
-      <div className="header p-4 border-b-2 w-full border-gray-500 flex justify-between items-center">
+      <div className="header p-4 border-b-2 w-full border-gray-500 flex justify-between items-center ">
         {userName && userMail ? (
           <div className="flex flex-col justify-start items-start w-[33.3%]">
             <span className="text-lg font-semibold text-white">{`Welcome, ${userName}`}</span>
@@ -114,10 +113,11 @@ export default function TaskManagement() {
         <div className="w-[33.3%] flex justify-end">
           <button
             onClick={() => setIsPopupOpen(true)}
-            className="bg-gradient-to-r from-[#028ce1] to-[#6a99e0] text-white p-2 rounded"
+            className="bg-gradient-to-r mr-2 from-[#028ce1] to-[#6a99e0] text-white px-4 py-2 rounded-md"
           >
             Add Task
           </button>
+          <LogoutButton/>
         </div>
 
       </div>

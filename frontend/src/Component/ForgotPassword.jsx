@@ -1,36 +1,42 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { FORGOT_PASSWORD } from "./API";
+import { useParams } from "react-router-dom";
 
-const ForgotPassword = () => {
+const ForgotPassword = ({setResetToken}) => {
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
-  const handleForgotPassword = (e) => {
+  const [showPopup, setShowPopup] = useState(false);
+
+  const handleForgotPassword = async (e) => {
     e.preventDefault();
-    const users = JSON.parse(localStorage.getItem("users")) || [];
-    const user = users.find((user) => user.email === email);
-
-    if (!user) {
-      setMessage("Email not found. Please check your email or sign up.");
-      return;
+    try {
+      const response = await fetch(FORGOT_PASSWORD, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email }),
+      });
+      const data = await response.json();
+      if (response.ok) {
+        setShowPopup(true);
+        setMessage("Mail was sent please check");
+      } else {
+        setMessage(data.message || "Something went wrong. Please try again.");
+      }
+    } catch (error) {
+      setMessage("Failed to send request. Please try again later.");
     }
-
-    const tempPassword = Math.random().toString(36).slice(-8);
-    user.password = tempPassword;
-    localStorage.setItem("users", JSON.stringify(users));
-
-    setMessage(`Your temporary password is: ${tempPassword}. Please log in and change your password.`);
   };
 
   return (
-    <div className="flex justify-center items-cente px-4">
-      <div className="w-full max-w-md bg-white shadow-lg rounded-lg p-8">
+    <div className="flex justify-center items-center px-4">
+      <div className="w-[400px] max-w-md bg-white shadow-lg rounded-lg p-8">
         <h1 className="text-3xl font-bold text-gray-800 text-center">Forgot Password</h1>
-        <p className="text-gray-500 text-center mt-2">
-          Enter your email and we will send you a temporary password.
-        </p>
+        <p className="text-gray-500 text-center mt-2">Enter your email to reset your password.</p>
 
         <form className="mt-6 space-y-5" onSubmit={handleForgotPassword}>
           {message && <p className="text-green-500 text-sm text-center">{message}</p>}
-
           <div>
             <label className="block text-gray-700 font-medium">Email</label>
             <input
@@ -42,20 +48,12 @@ const ForgotPassword = () => {
               required
             />
           </div>
-
           <button
             type="submit"
             className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 rounded-lg transition duration-300"
           >
             Reset Password
           </button>
-
-          <p className="text-center text-gray-500 mt-4">
-            Remember your password?{" "}
-            <a href="/signin" className="text-indigo-600 font-medium cursor-pointer" >
-              Sign in
-            </a>
-          </p>
         </form>
       </div>
     </div>
