@@ -38,44 +38,6 @@ const Login = ({setIsAuthenticated}) => {
     }
   };
 
-  // const handleGoogleLogin = () => {
-  //   // Open Google auth in a new window
-  //   // const width = 500;
-  //   // const height = 600;
-  //   // const left = (window.screen.width / 2) - (width / 2);
-  //   // const top = (window.screen.height / 2) - (height / 2);
-    
-  //   // const authWindow = window.open(
-  //   //    GOOGLE_AUTH_URL, 
-  //   //   'Google Authentication', 
-  //   //   `width=${width},height=${height},left=${left},top=${top}`
-  //   // );
-
-  //   // // Listen for messages from the popup
-  //   // const messageHandler = (event) => {
-  //   //   if (event.origin !== window.location.origin) return;
-
-  //   //   if (event.data.type === 'GOOGLE_AUTH_SUCCESS') {
-  //   //     const { accessToken, refreshToken, user } = event.data;
-        
-  //   //     localStorage.setItem("accessToken", accessToken);
-  //   //     localStorage.setItem("refreshToken", refreshToken);
-  //   //     localStorage.setItem("user", JSON.stringify(user));
-        
-  //   //     setIsAuthenticated(true);
-  //   //     navigate("/taskmanagement");
-        
-  //   //     // Close the auth window
-  //   //     authWindow?.close();
-        
-  //   //     // Remove event listener
-  //   //     window.removeEventListener('message', messageHandler);
-  //   //   }
-  //   // };
-
-  //   // window.addEventListener('message', messageHandler);
-  //   window.location.href = "http://localhost:5000/api/v1/users/auth/google"
-  // };
 
   const handleGoogleLogin = () => {
    window.location.href = "http://localhost:5000/api/v1/users/auth/google"

@@ -27,11 +27,14 @@ const successGoogleLogin = async (req, res, next) => {
     } else {
       console.log("Existing user found:", user);
     }
+
+    // Generate access and refresh tokens
     const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(user._id);
 
+    // Set cookies for tokens
     const options = {
       httpOnly: true,
-      secure: true,
+      secure: true, // Ensure HTTPS is used in production
     };
 
     return res
