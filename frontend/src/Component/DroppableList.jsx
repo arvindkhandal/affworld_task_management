@@ -1,21 +1,14 @@
-import { useEffect, useState } from 'react';
+import {  useState } from 'react';
 import { Draggable, Droppable } from "react-beautiful-dnd";
 import DeleteModal from './DeleteModal';
+import { useAuth } from '../hooks/useAuth';
 
 export default function DroppableList({ id, items, label, tint, handleDelete }) {
   const [deleteModal, setDeleteModal] = useState(false);
   const [itemToDelete, setItemToDelete] = useState(null);
-  const [userID,setUserID] = useState()
+  const {user} = useAuth()
+  const userID = user?._id
   
-    useEffect(() => {
-        const userData = localStorage.getItem("user");
-    
-        if (userData) {
-          const parsedData = JSON.parse(userData);
-          setUserID(parsedData?._id)
-        }
-      }, []);
-
   const handleDeleteClick = (item, e) => {
     e.stopPropagation();
     setItemToDelete(item);

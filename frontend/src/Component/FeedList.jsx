@@ -1,69 +1,23 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { MdDelete } from "react-icons/md";
-import { GET_ALL_POSTS, DELETE_POST } from "./API";
 import DeleteModal from "./DeleteModal";
+import { useAuth } from "../hooks/useAuth";
 
-const FeedList = () => {
-    const [posts, setPosts] = useState([]);
-    const [userId, setUserId] = useState(null);
+const FeedList = ({ posts, onDeletePost }) => {
     const [deleteModal, setDeleteModal] = useState(false);
+    const [selectedPostId, setSelectedPostId] = useState(null);
+    const { user } = useAuth();
+    const userId = user?._id;
 
-    useEffect(() => {
-        const userData = localStorage.getItem("user");
-        if (userData) {
-            const parsedData = JSON.parse(userData);
-            setUserId(parsedData?._id);
-        }
-    }, []);
+    const handleDeleteClick = (postId) => {
+        setSelectedPostId(postId);
+        setDeleteModal(true);
+    };
 
-    useEffect(() => {
-        const fetchPosts = async () => {
-            try {
-                const token = localStorage.getItem("accessToken");
-                if (!token) throw new Error("Authorization token is missing.");
-
-                const response = await fetch(GET_ALL_POSTS, {
-                    method: "GET",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Authorization": `Bearer ${token}`,
-                    },
-                });
-
-                if (!response.ok) throw new Error(`Server error: ${response.status}`);
-
-                const data = await response.json();
-                if (data.success) setPosts(data.posts);
-                else console.error("Failed to fetch posts:", data.message);
-                setDeleteModal(false)
-            } catch (error) {
-                console.error("Error fetching posts:", error.message);
-            }
-        };
-
-        fetchPosts();
-    }, []);
-
-    const handleDeletePost = async (id) => {
-        try {
-            const token = localStorage.getItem("accessToken");
-            if (!token) throw new Error("Authorization token is missing.");
-
-            const response = await fetch(`${DELETE_POST}${id}`, {
-                method: "DELETE",
-                headers: {
-                    "Authorization": `Bearer ${token}`,
-                },
-            });
-
-            if (!response.ok) throw new Error("Failed to delete the post");
-
-            const result = await response.json();
-            console.log("Post deleted successfully", result);
-            setPosts(posts.filter(post => post._id !== id));
-        } catch (error) {
-            console.error("Error deleting the post", error.message);
-        }
+    const confirmDelete = () => {
+        onDeletePost(selectedPostId);
+        setDeleteModal(false);
+        setSelectedPostId(null);
     };
 
     return (
@@ -87,16 +41,16 @@ const FeedList = () => {
                             </div>
                             {userId === post?.user?._id && (
                                 <>
-                                <MdDelete
-                                    className="text-2xl text-white cursor-pointer"
-                                    onClick={()=>{setDeleteModal(true)}}
-                                />
-                                {deleteModal && (
-                                        <DeleteModal 
-                                          onCancel={()=>{setDeleteModal(false)}}
-                                          onConfirm={() => handleDeletePost(post._id) }
+                                    <MdDelete
+                                        className="text-2xl text-white cursor-pointer"
+                                        onClick={() => handleDeleteClick(post._id)}
+                                    />
+                                    {deleteModal && selectedPostId === post._id && (
+                                        <DeleteModal
+                                            onCancel={() => { setDeleteModal(false) }}
+                                            onConfirm={confirmDelete}
                                         />
-                                      )}
+                                    )}
                                 </>
                             )}
                         </div>

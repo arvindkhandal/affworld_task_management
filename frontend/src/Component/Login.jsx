@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { LOGIN_USER } from "./API";
 import { IoMdEye, IoMdEyeOff } from "react-icons/io";
+import { useAuth } from "../hooks/useAuth";
 
 const Login = ({setIsAuthenticated}) => {
   const [email, setEmail] = useState("");
@@ -9,6 +10,7 @@ const Login = ({setIsAuthenticated}) => {
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
+  const {updateAuth}  = useAuth()
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -25,16 +27,16 @@ const Login = ({setIsAuthenticated}) => {
       if (!response.ok) {
         throw new Error(data.message || "Invalid email or password");
       }
-
-    localStorage.setItem("user", JSON.stringify(data.data.user));
-    localStorage.setItem("accessToken", data.data.accessToken);
-    localStorage.setItem("refreshToken", data.data.refreshToken);
-
-    setIsAuthenticated(true);
+      updateAuth({user:JSON.stringify(data.data.user),accessToken:data.data.accessToken})
+      setIsAuthenticated(true);
       navigate("/taskmanagement");
     } catch (error) {
       setError(error.message);
     }
+  };
+
+  const handleGoogleLogin = () => {
+   window.location.href = "http://localhost:5000/api/v1/users/auth/google"
   };
 
   return (
@@ -80,7 +82,7 @@ const Login = ({setIsAuthenticated}) => {
                 {showPassword ? (<IoMdEye />) : (<IoMdEyeOff /> )}
               </div>
             </div>
-          </div>
+          </div> 
 
           <div className="flex items-center justify-end text-sm">
             <a href="/forgot" className="text-indigo-500 hover:underline">
@@ -99,6 +101,7 @@ const Login = ({setIsAuthenticated}) => {
 
           <button
             type="button"
+            onClick={handleGoogleLogin}
             className="flex items-center justify-center w-full border border-gray-300 py-2 rounded-lg text-gray-700 hover:bg-gray-100"
           >
             <img

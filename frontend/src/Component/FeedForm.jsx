@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { CREATE_POST } from "./API";
 
 export default function FeedForm({ onSubmit, onClose }) {
   const [formValues, setFormValues] = useState({
@@ -24,42 +23,15 @@ export default function FeedForm({ onSubmit, onClose }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!formValues.caption || !formValues.image) {
-      alert("Caption and image are required!");
-      return;
-    }
-
     const formData = new FormData();
     formData.append("caption", formValues.caption);
     formData.append("photo", formValues.image);
-
+    
     setLoading(true);
-    const userData = localStorage.getItem("user");
-    const parsedData = JSON.parse(userData);
-    const token = parsedData._id;
-    const accessToken = localStorage.getItem("accessToken")
-    if (!token) {
-      setError("No access token found.");
-      setLoading(false);
-      return;
-    }
+    setError("");
 
     try {
-      const response = await fetch(`${CREATE_POST}${token}`, {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${accessToken}`,
-        },
-        body: formData,
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to create feed post.");
-      }
-
-      const result = await response.json();
-      onSubmit(result);
-      onClose();
+      await onSubmit(formData);
       setLoading(false);
     } catch (error) {
       setError(error.message);

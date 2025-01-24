@@ -9,17 +9,38 @@ const {
   forgotPassword,
   resetPassword
 } = require("../controllers/user.controller");
-const upload = require("../middlewares/multer.middleware");
 const { verifyJWT } = require("../middlewares/auth.middleware");
 
+const passport = require("../utils/passport");
+const {
+  successGoogleLogin,
+  failureGoogleLogin,
+} = require("../controllers/googleAuthController");
+
 const router = express.Router();
+router.use(passport.initialize());
+router.use(passport.session());
 
-console.log("user route called");
-
-router.route("/register").post(
-  registerUser
+// Route for Google authentication
+router.get(
+  "/auth/google",
+  passport.authenticate("google", { scope: ["email", "profile"] })
 );
 
+// Google callback route
+router.get(
+  "/auth/google/callback",
+  passport.authenticate("google", {
+    failureRedirect: "/api/v1/users/auth/google/failure",
+  }),
+  successGoogleLogin
+);
+
+// Success and failure routes
+router.get("/auth/google/success", successGoogleLogin);
+router.get("/auth/google/failure", failureGoogleLogin);
+
+router.route("/register").post(registerUser);
 router.route("/login").post(loginUser);
 
 // Secured routes
