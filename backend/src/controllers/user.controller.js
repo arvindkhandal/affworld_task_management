@@ -6,26 +6,8 @@ const jwt = require("jsonwebtoken");
 const crypto = require('crypto');
 const { default: mongoose } = require("mongoose");
 const transporter = require("../utils/configs/nodeMailerConfig");
+const { generateAccessAndRefreshTokens } = require("../utils/generateAccessAndRefreshTokens"); 
 
-
-const generateAccessAndRefreshTokens = async (userId) => {
-  try {
-    const user = await Users.findById(userId);
-
-    const accessToken = user.generateAccessToken();
-    const refreshToken = user.generateRefreshToken();
-
-    user.refreshToken = refreshToken;
-    await user.save({ validateBeforeSave: false });
-
-    return { accessToken, refreshToken };
-  } catch (error) {
-    throw new ApiError(
-      500,
-      "Something went wrong while generating access & refresh token"
-    );
-  }
-};
 
 const registerUser = asyncHandler(async (req, resp) => {
   console.log("register called");
@@ -301,5 +283,5 @@ module.exports = {
   changeCurrentUserPassword,
   getCurrentUser,
   forgotPassword,
-  resetPassword
+  resetPassword,
 };
