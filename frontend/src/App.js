@@ -1,45 +1,14 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
-import { useEffect, useState } from "react";
 import Taskmanagement from "./Component/Taskmanagement";
 import Signup from "./Component/Signup";
 import Login from "./Component/Login";
 import ForgotPassword from "./Component/ForgotPassword";
 import ResetPassword from "./Component/ResetPassword";
+import { useAuth } from "./hooks/useAuth";
 
 export default function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [accessToken, setAccessToken] = useState("");
-  const [user, setUser] = useState({});
-
-  useEffect(() => {
-    if (accessToken) {
-      localStorage.setItem("accessToken", accessToken);
-    }
-    if (Object.keys(user).length > 0) {
-      localStorage.setItem("user", JSON.stringify(user));
-    }
-  }, [accessToken, user]);
-
-  useEffect(() => {
-    function getCookie(key) {
-      const keyValue = document.cookie.match("(^|;) ?" + key + "=([^;]*)(;|$)");
-      return keyValue ? keyValue[2] : null;
-    }
-
-    const encodedString = getCookie("user");
-    if (encodedString) {
-      const decodedString = decodeURIComponent(encodedString);
-      const parsedObject = JSON.parse(decodedString);
-      const token = parsedObject?.accessToken;
-      setAccessToken(token || ""); 
-      setUser(parsedObject?.user); 
-    }
-  }, []);
-
-  useEffect(() => {
-    setIsAuthenticated(!!accessToken);
-  }, [accessToken]);
-
+  const { isAuthenticated, updateAuth } = useAuth();
+  
   const authRoutes = [
     { path: "/signin", element: Login, redirectTo: "/taskmanagement" },
     { path: "/signup", element: Signup, redirectTo: "/taskmanagement" },
@@ -61,7 +30,7 @@ export default function App() {
                 isAuthenticated ? (
                   <Navigate to={redirectTo} replace />
                 ) : (
-                  <Element setIsAuthenticated={setIsAuthenticated} />
+                  <Element setIsAuthenticated={updateAuth} />
                 )
               }
             />

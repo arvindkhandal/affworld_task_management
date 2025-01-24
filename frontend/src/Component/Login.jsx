@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { LOGIN_USER, GOOGLE, GOOGLE_CALLBACK, GOOGLE_AUTH_URL } from "./API";
+import { LOGIN_USER } from "./API";
 import { IoMdEye, IoMdEyeOff } from "react-icons/io";
+import { useAuth } from "../hooks/useAuth";
 
 const Login = ({setIsAuthenticated}) => {
   const [email, setEmail] = useState("");
@@ -9,6 +10,7 @@ const Login = ({setIsAuthenticated}) => {
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
+  const {updateAuth}  = useAuth()
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -25,12 +27,7 @@ const Login = ({setIsAuthenticated}) => {
       if (!response.ok) {
         throw new Error(data.message || "Invalid email or password");
       }
-
-      localStorage.setItem("user", JSON.stringify(data.data.user));
-      localStorage.setItem("accessToken", data.data.accessToken);
-      localStorage.setItem("refreshToken", data.data.refreshToken);
-      const userData = document.cookie
-
+      updateAuth({user:JSON.stringify(data.data.user),accessToken:data.data.accessToken})
       setIsAuthenticated(true);
       navigate("/taskmanagement");
     } catch (error) {
@@ -38,22 +35,9 @@ const Login = ({setIsAuthenticated}) => {
     }
   };
 
-
   const handleGoogleLogin = () => {
    window.location.href = "http://localhost:5000/api/v1/users/auth/google"
   };
-
-  const handleGoogleAuthSuccess = (data) => {
-    const { accessToken, refreshToken, user } = data;
-
-    localStorage.setItem('accessToken', accessToken);
-    localStorage.setItem('refreshToken', refreshToken);
-    localStorage.setItem('user', JSON.stringify(user));
-
-    setIsAuthenticated(true);
-    navigate('/taskmanagement');
-  };
-
 
   return (
     <div className="flex justify-center items-center px-4">

@@ -1,41 +1,16 @@
 import React, { useEffect, useState } from "react";
 import { CREATE_TASK } from "./API";
+import { useAuth } from "../hooks/useAuth";
 
 export default function TaskForm({ onSubmit, onClose }) {
   const [formValues, setFormValues] = useState({
     name: "",
     description: "",
   });
-   const [ID,setID] = useState('')
-   const [isLoading, setIsLoading] = useState(true);
-   console.log(ID,'IDddddddd')
-    
-   useEffect(() => {
-    try {
-      const userData = localStorage.getItem("user");
-      if (userData) {
-        const parsedData = JSON.parse(userData);
-        const userId = parsedData?._id || parsedData?.id;
-        console.log(userId,'dddd')
-        
-        if (userId) {
-          setID(userId);
-        } else{
 
-          console.error("No valid user ID found");
-        }
-      } else {
-        console.error("No user data in localStorage");
-      }
-    } catch (error) {
-      console.error("Error parsing user data:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+  const { user } = useAuth()
+  const userId = user?._id
   
-  if (isLoading) return <div>Loading...</div>;
-
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormValues((prev) => ({ ...prev, [name]: value }));
@@ -43,33 +18,33 @@ export default function TaskForm({ onSubmit, onClose }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
-    if (!ID) {
-      alert("User ID is not available. Please try again.");
+
+    if (!userId) {
+      alert("User userId is not available. Please try again.");
       return;
     }
-  
+
     try {
-      const response = await fetch(`${CREATE_TASK}${ID}`, {
+      const response = await fetch(`${CREATE_TASK}${userId}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(formValues),
       });
-  
+
       if (!response.ok) {
         throw new Error("Failed to add task. Please try again.");
       }
-  
+
       const responseData = await response.json();
-  
+
       const newTask = {
         id: responseData.data._id,
         label: responseData.data.name,
         description: responseData.data.description,
       };
-  
+
       onSubmit(newTask);
       onClose();
       window.location.reload();
@@ -77,7 +52,7 @@ export default function TaskForm({ onSubmit, onClose }) {
       alert(error.message);
     }
   };
-  
+
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
