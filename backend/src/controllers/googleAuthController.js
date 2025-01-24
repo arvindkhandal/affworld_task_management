@@ -1,9 +1,9 @@
 
 
-const Users = require("../models/user.model"); // Ensure you have the correct path to your user model
-const { generateAccessAndRefreshTokens } = require("../utils/generateAccessAndRefreshTokens"); // Ensure this utility is correctly implemented and imported
-const ApiResponse = require("../utils/ApiResponse");; // For consistent response format
-const { ApiError } = require("../utils/ApiError"); // For error handling
+const Users = require("../models/user.model"); 
+const { generateAccessAndRefreshTokens } = require("../utils/generateAccessAndRefreshTokens");
+const ApiResponse = require("../utils/ApiResponse");
+const { ApiError } = require("../utils/ApiError"); 
 
 const successGoogleLogin = async (req, res, next) => {
   try {
@@ -11,7 +11,7 @@ const successGoogleLogin = async (req, res, next) => {
       throw new ApiError(401, "Google Authentication Failed");
     }
 
-    const { email, displayName } = req.user; // Assuming `req.user` contains `email` and `displayName` from Google profile
+    const { email, displayName } = req.user; 
     if (!email || !displayName) {
       throw new ApiError(400, "Incomplete Google Profile Information");
     }
@@ -34,34 +34,20 @@ const successGoogleLogin = async (req, res, next) => {
     // Set cookies for tokens
     const options = {
       httpOnly: true,
-      secure: true, // Ensure HTTPS is used in production
+      secure: true, 
     };
 
     return res
       .status(200)
       .cookie('user', JSON.stringify({ accessToken, options, refreshToken, user }), {
-        httpOnly: false,    // Makes the cookie accessible only by the server
-        secure: false,      // Ensures cookie is sent over HTTPS
-        sameSite: 'Lax', // Can be 'Strict', 'Lax', or 'None'
-        maxAge: 3600000,   // 1 hour in milliseconds
+        httpOnly: false, 
+        secure: false,   
+        sameSite: 'Lax',
+        maxAge: 3600000,   
       })
       .redirect(`${process.env.FRONTEND_BASE_URL}/taskmanagement`)
-    //   .json(
-    //     new ApiResponse(
-    //       200,
-    //       {
-    //         user: {
-    //           fullName: user.fullName,
-    //           email: user.email,
-    //         },
-    //         accessToken,
-    //         refreshToken,
-    //       },
-    //       "Google Authentication Successful"
-    //     )
-    //   );
   } catch (error) {
-    next(error); // Pass the error to your global error handler
+    next(error); 
   }
 };
 
