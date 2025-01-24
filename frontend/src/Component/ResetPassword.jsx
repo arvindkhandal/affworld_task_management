@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { RESET_PASSWORD } from "./API";
+import { IoMdEye, IoMdEyeOff } from "react-icons/io";
+
 
 export default function ResetPassword() {
   const { token } = useParams();
@@ -8,8 +10,10 @@ export default function ResetPassword() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const navigate = useNavigate();
-  
+
   const handleResetPassword = async () => {
     if (newPassword !== confirmPassword) {
       setMessage("Passwords do not match. Please try again.");
@@ -47,25 +51,37 @@ export default function ResetPassword() {
       <div className="bg-white w-[400px] p-6 rounded-lg shadow-lg">
         <h2 className="text-xl font-bold text-gray-800 text-center">Reset Password</h2>
         {message && <p className="text-green-500 text-sm text-center">{message}</p>}
-        <div className="mt-4">
+        <div className="mt-4 relative">
           <label className="block text-gray-700 font-medium">New Password</label>
           <input
-            type="password"
+            type={showPassword ? "text" : "password"}
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
           />
+          <span
+            onClick={() => setShowPassword(!showPassword)}
+           className="absolute right-3 bottom-2 cursor-pointer text-gray-500 text-2xl"
+          >
+            {showPassword ? (<IoMdEye />) : (<IoMdEyeOff /> )}
+          </span>
         </div>
-        <div className="mt-4">
+        <div className="mt-4 relative">
           <label className="block text-gray-700 font-medium">Confirm Password</label>
           <input
-            type="password"
+            type={showConfirmPassword ? "text" : "password"}
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
           />
+          <span
+            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+            className="absolute right-3 bottom-2 cursor-pointer text-gray-500 text-2xl"
+          >
+            {showConfirmPassword ? (<IoMdEye />) : (<IoMdEyeOff /> )}
+          </span>
         </div>
-        <div className="mt-6 flex justify-between">
+        <div className="mt-6 flex justify-end gap-4">
           <button
             className="bg-gray-400 text-white px-4 py-2 rounded-lg"
             onClick={() => setMessage("")}

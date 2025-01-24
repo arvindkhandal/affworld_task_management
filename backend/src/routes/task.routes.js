@@ -3,7 +3,7 @@ const { createTask, getTasks, getTaskById, updateTask, deleteTask } = require('.
 const router = express.Router();
 console.log("task route called");
 
-router.route("/createTask").post(createTask);
+router.route("/createTask/:id").post(createTask);
 router.route("/tasks").get(getTasks);
 router.route("/getTaskById/:id").get(getTaskById).put(updateTask).delete(deleteTask);
 

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { CREATE_TASK } from "./API";
 
 export default function TaskForm({ onSubmit, onClose }) {
@@ -6,6 +6,32 @@ export default function TaskForm({ onSubmit, onClose }) {
     name: "",
     description: "",
   });
+   const [ID,setID] = useState('')
+   const [isLoading, setIsLoading] = useState(true);
+    
+   useEffect(() => {
+    try {
+      const userData = localStorage.getItem("user");
+      if (userData) {
+        const parsedData = JSON.parse(userData);
+        const userId = parsedData?._id || parsedData?.id;
+        
+        if (userId) {
+          setID(userId);
+        } else {
+          console.error("No valid user ID found");
+        }
+      } else {
+        console.error("No user data in localStorage");
+      }
+    } catch (error) {
+      console.error("Error parsing user data:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+  
+  if (isLoading) return <div>Loading...</div>;
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -14,9 +40,14 @@ export default function TaskForm({ onSubmit, onClose }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+  
+    if (!ID) {
+      alert("User ID is not available. Please try again.");
+      return;
+    }
+  
     try {
-      const response = await fetch(CREATE_TASK, {
+      const response = await fetch(`${CREATE_TASK}${ID}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -33,11 +64,12 @@ export default function TaskForm({ onSubmit, onClose }) {
       const newTask = {
         id: responseData.data._id,
         label: responseData.data.name,
-        description: responseData.data.description
+        description: responseData.data.description,
       };
   
       onSubmit(newTask);
       onClose();
+      window.location.reload();
     } catch (error) {
       alert(error.message);
     }
@@ -66,13 +98,13 @@ export default function TaskForm({ onSubmit, onClose }) {
             <button
               type="button"
               onClick={onClose}
-              className="bg-gray-300 text-gray-700 px-4 py-2 rounded-md"
+              className="bg-gray-300 text-gray-700 px-4 mr-3 py-2 rounded-md"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="bg-gradient-to-r mr-2 from-[#028ce1] to-[#6a99e0] text-white px-4 py-2 rounded-md"
+              className="bg-gradient-to-r from-[#028ce1] to-[#6a99e0] text-white px-4 py-2 rounded-md"
             >
               Add Task
             </button>
