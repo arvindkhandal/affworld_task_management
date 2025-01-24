@@ -82,10 +82,7 @@ const Login = ({setIsAuthenticated}) => {
             </div>
           </div>
 
-          <div className="flex items-center justify-between text-sm">
-            <label className="flex items-center">
-              <input type="checkbox" className="mr-2" /> Remember me
-            </label>
+          <div className="flex items-center justify-end text-sm">
             <a href="/forgot" className="text-indigo-500 hover:underline">
               Forgot Password?
             </a>

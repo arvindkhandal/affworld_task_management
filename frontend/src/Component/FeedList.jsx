@@ -35,6 +35,7 @@ const FeedList = () => {
                 const data = await response.json();
                 if (data.success) setPosts(data.posts);
                 else console.error("Failed to fetch posts:", data.message);
+                setDeleteModal(false)
             } catch (error) {
                 console.error("Error fetching posts:", error.message);
             }

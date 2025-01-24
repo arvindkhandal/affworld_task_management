@@ -90,3 +90,15 @@ body {
   background-image: linear-gradient(90deg, #2fd4bd 0%, #66e887 100%);
 }
 
+.custom-scrollbar {
+  scrollbar-width: auto; /* For Firefox */
+  -ms-overflow-style: auto; /* For Internet Explorer */
+}
+
+/* For WebKit-based browsers like Chrome, Edge, and Safari */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px; /* Adjust scrollbar width */
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  border-radius: 4px;
+}

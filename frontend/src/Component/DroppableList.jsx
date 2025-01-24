@@ -1,10 +1,20 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Draggable, Droppable } from "react-beautiful-dnd";
 import DeleteModal from './DeleteModal';
 
 export default function DroppableList({ id, items, label, tint, handleDelete }) {
   const [deleteModal, setDeleteModal] = useState(false);
   const [itemToDelete, setItemToDelete] = useState(null);
+  const [userID,setUserID] = useState()
+  
+    useEffect(() => {
+        const userData = localStorage.getItem("user");
+    
+        if (userData) {
+          const parsedData = JSON.parse(userData);
+          setUserID(parsedData?._id)
+        }
+      }, []);
 
   const handleDeleteClick = (item, e) => {
     e.stopPropagation();
@@ -36,6 +46,7 @@ export default function DroppableList({ id, items, label, tint, handleDelete }) 
                   items={items}
                   label={label}
                   onDeleteClick={handleDeleteClick}
+                  userID={userID}
                 />
                 {provided.placeholder}
               </div>
@@ -54,33 +65,36 @@ export default function DroppableList({ id, items, label, tint, handleDelete }) 
   );
 }
 
-const TaskList = ({ items, label, onDeleteClick }) => (
-  <ul className="list-none m-0 min-h-6 p-0 relative flex-wrap max-w-[500px]">
+const TaskList = ({ items, label, onDeleteClick, userID }) => (
+  <ul className="list-none m-0 min-h-[500px] p-0 max-h-[500px] overflow-y-auto overflow-x-hidden custom-scrollbar relative flex-wrap max-w-[500px]">
     {items.map((item, index) => (
       <TaskItem
         key={item.id}
         item={item}
         index={index}
+        userID = {userID}
         onDeleteClick={onDeleteClick}
       />
     ))}
   </ul>
 );
 
-const TaskItem = ({ item, index, onDeleteClick }) => (
+const TaskItem = ({ item, index, onDeleteClick, userID }) => (
   <li className='list__item'>
     <Draggable draggableId={item.id} index={index}>
       {(provided) => (
-        <div
-          className='flex flex-col bg-[hsl(214,13%,76%)] max-w-[500px] text-wrap rounded-[var(--border-radius-500)] cursor-pointer text-[hsl(228,19%,98%)] px-4 py-2 relative'
-          {...provided.draggableProps}
-          {...provided.dragHandleProps}
-          ref={provided.innerRef}
-        >
-          <p className="text-lg font-semibold text-gray-600">{item.label}</p>
-          <p className="text-sm text-[#6c7482] mt-1 break-words">{item.description}</p>
-          <DeleteButton onDelete={(e) => onDeleteClick(item, e)} />
-        </div>
+       <div 
+       className='flex flex-col bg-[hsl(214,13%,76%)] max-w-[500px] text-wrap rounded-[var(--border-radius-500)] cursor-pointer text-[hsl(228,19%,98%)] px-4 py-2 relative'
+       {...provided.draggableProps}
+       {...provided.dragHandleProps}
+       ref={provided.innerRef}
+     >
+         <p className="text-lg font-semibold text-gray-600">{item?.name}</p>
+       <p className="text-sm text-[#6c7482] mt-1 break-words">{item?.description}</p>
+       {userID === item.user?._id ? (
+         <DeleteButton onDelete={(e) => onDeleteClick(item, e)} />
+       ) : null}
+     </div>
       )}
     </Draggable>
   </li>

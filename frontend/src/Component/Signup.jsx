@@ -1,12 +1,13 @@
-import React from "react";
-import { useState } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { CREATE_USER } from "./API";
+import { IoMdEye, IoMdEyeOff } from "react-icons/io";
 
 const Signup = () => {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
@@ -21,11 +22,11 @@ const Signup = () => {
         body: JSON.stringify({ fullName, email, password }),
       });
       const data = await response.json();
-      
+
       if (!response.ok) {
         throw new Error(data.message || "Something went wrong");
       }
-      navigate("/"); 
+      navigate("/");
     } catch (error) {
       setError(error.message);
     }
@@ -33,7 +34,7 @@ const Signup = () => {
 
   return (
     <div className="flex justify-center items-center px-4">
-      <div className="w-[30rem]  bg-white shadow-lg rounded-lg p-8">
+      <div className="w-[30rem] bg-white shadow-lg rounded-lg p-8">
         <h1 className="text-3xl font-bold text-gray-800 text-center">Sign Up</h1>
         <p className="text-gray-500 text-center mt-2">
           Already have an account? <a href="/signin" className="text-indigo-600 font-medium">Sign in</a>
@@ -65,16 +66,22 @@ const Signup = () => {
             />
           </div>
 
-          <div>
+          <div className="relative">
             <label className="block text-gray-700 font-medium">Password</label>
             <input
-              type="password"
+              type={showPassword ? "text" : "password"}
               placeholder="Create a password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
               required
             />
+            <div
+              className="absolute right-3  bottom-2 cursor-pointer text-gray-500 text-2xl"
+              onClick={() => setShowPassword(!showPassword)}
+            >
+              {showPassword ? (<IoMdEye />) : (<IoMdEyeOff />)}
+            </div>
           </div>
 
           <button
