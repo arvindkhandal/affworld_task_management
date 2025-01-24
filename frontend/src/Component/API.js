@@ -11,3 +11,5 @@ export const GET_TASK_BY_ID = `${BASE_URL}task/getTaskById/`;
 export const CREATE_POST = `${BASE_URL}post/createPost/`;
 export const GET_ALL_POSTS = `${BASE_URL}post/getAllPost`;
 export const DELETE_POST = `${BASE_URL}post/postById/`;
+export const GOOGLE_AUTH_URL = `${BASE_URL}users/auth/google`;
+
