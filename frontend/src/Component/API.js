@@ -1,4 +1,4 @@
-const BASE_URL = 'http://localhost:5000/api/v1/';
+const BASE_URL = 'https://affworld-task-management-t2wg.vercel.app/api/v1/';
 export const CREATE_USER = `${BASE_URL}users/register`;
 export const LOGIN_USER = `${BASE_URL}users/login`;
 export const FORGOT_PASSWORD = `${BASE_URL}users/forgotPassword`;
