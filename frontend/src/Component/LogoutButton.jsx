@@ -3,10 +3,17 @@ import DeleteModal from "./DeleteModal";
 
 export default function LogoutButton() {
 const [deleteModal, setDeleteModal] = useState(false);
-  const handleLogout = () => {
-    localStorage.clear();
-    window.location.reload();
-  };
+const handleLogout = () => {
+  localStorage.clear();
+
+  const cookies = document.cookie.split("; ");
+  cookies.forEach((cookie) => {
+    const [key] = cookie.split("=");
+    document.cookie = `${key}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+  });
+
+  window.location.reload();
+};
 
   return (
     <>

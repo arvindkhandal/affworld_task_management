@@ -7,18 +7,38 @@ import ForgotPassword from "./Component/ForgotPassword";
 import ResetPassword from "./Component/ResetPassword";
 
 export default function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(() => 
-    !!localStorage.getItem("accessToken")
-  );
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [accessToken, setAccessToken] = useState("");
+  const [user, setUser] = useState({});
 
   useEffect(() => {
-    const handleStorageChange = () => {
-      setIsAuthenticated(!!localStorage.getItem("accessToken"));
-    };
+    if (accessToken) {
+      localStorage.setItem("accessToken", accessToken);
+    }
+    if (Object.keys(user).length > 0) {
+      localStorage.setItem("user", JSON.stringify(user));
+    }
+  }, [accessToken, user]);
 
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
+  useEffect(() => {
+    function getCookie(key) {
+      const keyValue = document.cookie.match("(^|;) ?" + key + "=([^;]*)(;|$)");
+      return keyValue ? keyValue[2] : null;
+    }
+
+    const encodedString = getCookie("user");
+    if (encodedString) {
+      const decodedString = decodeURIComponent(encodedString);
+      const parsedObject = JSON.parse(decodedString);
+      const token = parsedObject?.accessToken;
+      setAccessToken(token || ""); 
+      setUser(parsedObject?.user); 
+    }
   }, []);
+
+  useEffect(() => {
+    setIsAuthenticated(!!accessToken);
+  }, [accessToken]);
 
   const authRoutes = [
     { path: "/signin", element: Login, redirectTo: "/taskmanagement" },
@@ -38,50 +58,50 @@ export default function App() {
               key={path}
               path={path}
               element={
-                isAuthenticated ? 
-                  <Navigate to={redirectTo} replace /> : 
+                isAuthenticated ? (
+                  <Navigate to={redirectTo} replace />
+                ) : (
                   <Element setIsAuthenticated={setIsAuthenticated} />
+                )
               }
             />
           ))}
-          
-          <Route 
-            path="/forgot-password/:token" 
-            element={<ResetPassword />} 
-          />
-          
+
+          <Route path="/forgot-password/:token" element={<ResetPassword />} />
           <Route path="/forgot" element={<ForgotPassword />} />
-          
+
           {protectedRoutes.map(({ path, element: Element }) => (
             <Route
               key={path}
               path={path}
               element={
-                isAuthenticated ? 
-                  <Element /> : 
+                isAuthenticated ? (
+                  <Element />
+                ) : (
                   <Navigate to="/signin" replace />
+                )
               }
             />
           ))}
-          
-          <Route 
-            path="/" 
+
+          <Route
+            path="/"
             element={
-              <Navigate 
-                to={isAuthenticated ? "/taskmanagement" : "/signin"} 
-                replace 
+              <Navigate
+                to={isAuthenticated ? "/taskmanagement" : "/signin"}
+                replace
               />
-            } 
+            }
           />
-          
-          <Route 
-            path="*" 
+
+          <Route
+            path="*"
             element={
-              <Navigate 
-                to={isAuthenticated ? "/taskmanagement" : "/signin"} 
-                replace 
+              <Navigate
+                to={isAuthenticated ? "/taskmanagement" : "/signin"}
+                replace
               />
-            } 
+            }
           />
         </Routes>
       </div>

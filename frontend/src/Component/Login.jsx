@@ -29,6 +29,7 @@ const Login = ({setIsAuthenticated}) => {
       localStorage.setItem("user", JSON.stringify(data.data.user));
       localStorage.setItem("accessToken", data.data.accessToken);
       localStorage.setItem("refreshToken", data.data.refreshToken);
+      const userData = document.cookie
 
       setIsAuthenticated(true);
       navigate("/taskmanagement");
@@ -37,72 +38,60 @@ const Login = ({setIsAuthenticated}) => {
     }
   };
 
-  const handleGoogleLogin = () => {
-    // Open Google auth in a new window
-    const width = 500;
-    const height = 600;
-    const left = (window.screen.width / 2) - (width / 2);
-    const top = (window.screen.height / 2) - (height / 2);
+  // const handleGoogleLogin = () => {
+  //   // Open Google auth in a new window
+  //   // const width = 500;
+  //   // const height = 600;
+  //   // const left = (window.screen.width / 2) - (width / 2);
+  //   // const top = (window.screen.height / 2) - (height / 2);
     
-    const authWindow = window.open(
-       GOOGLE_AUTH_URL, 
-      'Google Authentication', 
-      `width=${width},height=${height},left=${left},top=${top}`
-    );
+  //   // const authWindow = window.open(
+  //   //    GOOGLE_AUTH_URL, 
+  //   //   'Google Authentication', 
+  //   //   `width=${width},height=${height},left=${left},top=${top}`
+  //   // );
 
-    // Listen for messages from the popup
-    const messageHandler = (event) => {
-      if (event.origin !== window.location.origin) return;
+  //   // // Listen for messages from the popup
+  //   // const messageHandler = (event) => {
+  //   //   if (event.origin !== window.location.origin) return;
 
-      if (event.data.type === 'GOOGLE_AUTH_SUCCESS') {
-        const { accessToken, refreshToken, user } = event.data;
+  //   //   if (event.data.type === 'GOOGLE_AUTH_SUCCESS') {
+  //   //     const { accessToken, refreshToken, user } = event.data;
         
-        localStorage.setItem("accessToken", accessToken);
-        localStorage.setItem("refreshToken", refreshToken);
-        localStorage.setItem("user", JSON.stringify(user));
+  //   //     localStorage.setItem("accessToken", accessToken);
+  //   //     localStorage.setItem("refreshToken", refreshToken);
+  //   //     localStorage.setItem("user", JSON.stringify(user));
         
-        setIsAuthenticated(true);
-        navigate("/taskmanagement");
+  //   //     setIsAuthenticated(true);
+  //   //     navigate("/taskmanagement");
         
-        // Close the auth window
-        authWindow?.close();
+  //   //     // Close the auth window
+  //   //     authWindow?.close();
         
-        // Remove event listener
-        window.removeEventListener('message', messageHandler);
-      }
-    };
+  //   //     // Remove event listener
+  //   //     window.removeEventListener('message', messageHandler);
+  //   //   }
+  //   // };
 
-    window.addEventListener('message', messageHandler);
+  //   // window.addEventListener('message', messageHandler);
+  //   window.location.href = "http://localhost:5000/api/v1/users/auth/google"
+  // };
+
+  const handleGoogleLogin = () => {
+   window.location.href = "http://localhost:5000/api/v1/users/auth/google"
   };
 
-  // Handle Google auth callback (typically in a separate component)
-  const handleGoogleCallback = async () => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const accessToken = urlParams.get('accessToken');
-    const refreshToken = urlParams.get('refreshToken');
+  const handleGoogleAuthSuccess = (data) => {
+    const { accessToken, refreshToken, user } = data;
 
-    if (accessToken && refreshToken) {
-      localStorage.setItem("accessToken", accessToken);
-      localStorage.setItem("refreshToken", refreshToken);
-      
-      // Fetch user data using the access token
-      try {
-        const response = await fetch('/api/users/current', {
-          headers: {
-            'Authorization': `Bearer ${accessToken}`
-          }
-        });
-        const userData = await response.json();
-        
-        localStorage.setItem("user", JSON.stringify(userData.data));
-        setIsAuthenticated(true);
-        navigate("/taskmanagement");
-      } catch (error) {
-        console.error("Error fetching user data", error);
-        setError("Google authentication failed");
-      }
-    }
+    localStorage.setItem('accessToken', accessToken);
+    localStorage.setItem('refreshToken', refreshToken);
+    localStorage.setItem('user', JSON.stringify(user));
+
+    setIsAuthenticated(true);
+    navigate('/taskmanagement');
   };
+
 
   return (
     <div className="flex justify-center items-center px-4">

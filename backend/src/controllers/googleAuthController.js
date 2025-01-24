@@ -16,10 +16,8 @@ const successGoogleLogin = async (req, res, next) => {
       throw new ApiError(400, "Incomplete Google Profile Information");
     }
 
-    // Check if the user already exists in the database
     let user = await Users.findOne({ email });
 
-    // If user does not exist, create a new user
     if (!user) {
       user = await Users.create({
         fullName: displayName,
@@ -29,34 +27,36 @@ const successGoogleLogin = async (req, res, next) => {
     } else {
       console.log("Existing user found:", user);
     }
-
-    // Generate access and refresh tokens
     const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(user._id);
 
-    // Set cookies for tokens
     const options = {
       httpOnly: true,
-      secure: true, // Ensure HTTPS is used in production
+      secure: true,
     };
 
     return res
       .status(200)
-      .cookie("accessToken", accessToken, options)
-      .cookie("refreshToken", refreshToken, options)
-      .json(
-        new ApiResponse(
-          200,
-          {
-            user: {
-              fullName: user.fullName,
-              email: user.email,
-            },
-            accessToken,
-            refreshToken,
-          },
-          "Google Authentication Successful"
-        )
-      );
+      .cookie('user', JSON.stringify({ accessToken, options, refreshToken, user }), {
+        httpOnly: false,    // Makes the cookie accessible only by the server
+        secure: false,      // Ensures cookie is sent over HTTPS
+        sameSite: 'Lax', // Can be 'Strict', 'Lax', or 'None'
+        maxAge: 3600000,   // 1 hour in milliseconds
+      })
+      .redirect(`${process.env.FRONTEND_BASE_URL}/taskmanagement`)
+    //   .json(
+    //     new ApiResponse(
+    //       200,
+    //       {
+    //         user: {
+    //           fullName: user.fullName,
+    //           email: user.email,
+    //         },
+    //         accessToken,
+    //         refreshToken,
+    //       },
+    //       "Google Authentication Successful"
+    //     )
+    //   );
   } catch (error) {
     next(error); // Pass the error to your global error handler
   }
