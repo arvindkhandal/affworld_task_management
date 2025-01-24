@@ -21,6 +21,10 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: [true, "Password is required"],
   },
+  googleId: {
+    type: String,
+    default: null
+  },
   refreshToken: {
     type: String,
   },

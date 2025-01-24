@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { LOGIN_USER } from "./API";
+import { LOGIN_USER, GOOGLE, GOOGLE_CALLBACK, GOOGLE_AUTH_URL } from "./API";
 import { IoMdEye, IoMdEyeOff } from "react-icons/io";
 
 const Login = ({setIsAuthenticated}) => {
@@ -26,14 +26,81 @@ const Login = ({setIsAuthenticated}) => {
         throw new Error(data.message || "Invalid email or password");
       }
 
-    localStorage.setItem("user", JSON.stringify(data.data.user));
-    localStorage.setItem("accessToken", data.data.accessToken);
-    localStorage.setItem("refreshToken", data.data.refreshToken);
+      localStorage.setItem("user", JSON.stringify(data.data.user));
+      localStorage.setItem("accessToken", data.data.accessToken);
+      localStorage.setItem("refreshToken", data.data.refreshToken);
 
-    setIsAuthenticated(true);
+      setIsAuthenticated(true);
       navigate("/taskmanagement");
     } catch (error) {
       setError(error.message);
+    }
+  };
+
+  const handleGoogleLogin = () => {
+    // Open Google auth in a new window
+    const width = 500;
+    const height = 600;
+    const left = (window.screen.width / 2) - (width / 2);
+    const top = (window.screen.height / 2) - (height / 2);
+    
+    const authWindow = window.open(
+       GOOGLE_AUTH_URL, 
+      'Google Authentication', 
+      `width=${width},height=${height},left=${left},top=${top}`
+    );
+
+    // Listen for messages from the popup
+    const messageHandler = (event) => {
+      if (event.origin !== window.location.origin) return;
+
+      if (event.data.type === 'GOOGLE_AUTH_SUCCESS') {
+        const { accessToken, refreshToken, user } = event.data;
+        
+        localStorage.setItem("accessToken", accessToken);
+        localStorage.setItem("refreshToken", refreshToken);
+        localStorage.setItem("user", JSON.stringify(user));
+        
+        setIsAuthenticated(true);
+        navigate("/taskmanagement");
+        
+        // Close the auth window
+        authWindow?.close();
+        
+        // Remove event listener
+        window.removeEventListener('message', messageHandler);
+      }
+    };
+
+    window.addEventListener('message', messageHandler);
+  };
+
+  // Handle Google auth callback (typically in a separate component)
+  const handleGoogleCallback = async () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const accessToken = urlParams.get('accessToken');
+    const refreshToken = urlParams.get('refreshToken');
+
+    if (accessToken && refreshToken) {
+      localStorage.setItem("accessToken", accessToken);
+      localStorage.setItem("refreshToken", refreshToken);
+      
+      // Fetch user data using the access token
+      try {
+        const response = await fetch('/api/users/current', {
+          headers: {
+            'Authorization': `Bearer ${accessToken}`
+          }
+        });
+        const userData = await response.json();
+        
+        localStorage.setItem("user", JSON.stringify(userData.data));
+        setIsAuthenticated(true);
+        navigate("/taskmanagement");
+      } catch (error) {
+        console.error("Error fetching user data", error);
+        setError("Google authentication failed");
+      }
     }
   };
 
@@ -80,7 +147,7 @@ const Login = ({setIsAuthenticated}) => {
                 {showPassword ? (<IoMdEye />) : (<IoMdEyeOff /> )}
               </div>
             </div>
-          </div>
+          </div> 
 
           <div className="flex items-center justify-end text-sm">
             <a href="/forgot" className="text-indigo-500 hover:underline">
@@ -99,6 +166,7 @@ const Login = ({setIsAuthenticated}) => {
 
           <button
             type="button"
+            onClick={handleGoogleLogin}
             className="flex items-center justify-center w-full border border-gray-300 py-2 rounded-lg text-gray-700 hover:bg-gray-100"
           >
             <img
